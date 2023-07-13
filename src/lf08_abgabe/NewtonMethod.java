@@ -1,8 +1,11 @@
 package lf08_abgabe;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 import lf08_abgabe.functions.BaseFunction;
 
 public class NewtonMethod implements ZeroPointProcess{
@@ -70,7 +73,9 @@ public class NewtonMethod implements ZeroPointProcess{
         repeat = false;
       }
     }
-    return zeroPoints;
+    // entferne doppelte Elemente
+    Set<Double> zeroSet = new HashSet<>(zeroPoints);
+    return new ArrayList<>(zeroSet);
   }
 
   private double newtonMethod(BaseFunction function, double x0) {

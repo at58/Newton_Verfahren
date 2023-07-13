@@ -14,8 +14,8 @@ public class Main {
     NewtonMethod newtonMethod = new NewtonMethod();
 
     List<BaseFunction> functions = new ArrayList<>();
-//    functions.add(new Function_1());
-//    functions.add(new Function_2());
+    functions.add(new Function_1());
+    functions.add(new Function_2());
     functions.add(new Function_3());
 
     for (BaseFunction f : functions) {

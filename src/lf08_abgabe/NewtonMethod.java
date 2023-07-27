@@ -7,6 +7,10 @@ import java.util.Scanner;
 import java.util.Set;
 import lf08_abgabe.functions.BaseFunction;
 
+/**
+ * Diese Klasse implementiert das Newton-Verfahren zur Suche von Nullstellen in einem vorgegebenen
+ * Intervall.
+ */
 public class NewtonMethod implements ZeroPointProcess{
 
   final double epsilon = 0.01;

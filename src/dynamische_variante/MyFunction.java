@@ -1,6 +1,8 @@
 package dynamische_variante;
 
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -11,10 +13,11 @@ public class MyFunction {
 
   public static void inputFormula() {
 
-    System.out.println("Geben Sie die Funktion ein, dessen Nullstelle via Newton-Verfahren berechnet werden soll: ");
+    System.out.println("Geben Sie die Funktion ein, dessen Nullstellen via Newton-Verfahren berechnet werden soll: ");
+    System.out.print("f(x)= ");
     Scanner scanner = new Scanner(System.in);
     formula = scanner.nextLine();
-    while (!validFormula(formula)) {
+    while (!validateFormula(formula)) {
       System.out.println("Die Funktion enthält invalide Zeichen. Wiederholen Sie die Eingabe:");
       formula = scanner.nextLine();
     }
@@ -22,9 +25,18 @@ public class MyFunction {
 
   }
 
-  private static boolean validFormula(String formula) {
+  public static boolean validateFormula(String formula) {
     // TODO: implement whitelist processing
-    return true;
+    boolean result = false;
+    String regex = "(-?[0-9]+|-?x|(-?[0-9]*(?<=[0-9]),?(?<=,)[0-9]+x?))";
+    Pattern whitelist = Pattern.compile(regex);
+
+
+    Matcher matcher = whitelist.matcher(formula);
+    if(formula.matches(regex)) {
+      result = true;
+    }
+    return result;
   }
 
   private static void prepareFormula() {

@@ -1,7 +1,6 @@
 package lf08_abgabe;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
@@ -30,13 +29,12 @@ public class NewtonMethod implements ZeroPointProcess{
    * </p>
    *
    * @param function Die Funktionsgleichung, dessen Nullstellen gesucht werden soll.
-   * @return Alle Nullstellen im gegebenen Intervall.
    */
   @Override
-  public List<Double> zeroPoints(BaseFunction function) {
+  public void zeroPoints(BaseFunction function) {
 
     boolean repeat = true;
-    List<Double> zeroPointAreas = new ArrayList<>();
+    List<Double> zeroPointAreas;
     List<Double> zeroPoints = new ArrayList<>();
 
     while(repeat) {
@@ -44,17 +42,11 @@ public class NewtonMethod implements ZeroPointProcess{
       int start = intervall[0];
       int end = intervall[1];
 
-      double sign1 = Math.signum(function.f(start));
-      for (int i = (start + 1); i <= end; i++) {
-        double sign2 = Math.signum(function.f(i));
-        if (sign2 != sign1) {
-          zeroPointAreas.add(i - 0.5);
-          sign1 = sign2;
-        }
-      }
+      zeroPointAreas = getZeroPointCandidates(start, end, function);
+
       if (zeroPointAreas.isEmpty()) {
         System.out.println("Es gibt keine Nullstellen im vorgegebenen Intervall!");
-        System.out.println("Soll ein neues Intervall fur f(x) = " + function.toString()
+        System.out.println("Soll ein neues Intervall fur f(x) = " + function
                                + " untersucht werden?\nj = ja\nn = nein");
         String yesOrNo = scanner.nextLine();
         if (!yesOrNo.equals("j")) {
@@ -75,7 +67,8 @@ public class NewtonMethod implements ZeroPointProcess{
     }
     // entferne doppelte Elemente
     Set<Double> zeroSet = new HashSet<>(zeroPoints);
-    return new ArrayList<>(zeroSet);
+    // Gebe Nullstelle in der Konsole aus
+    printZeroPoints(new ArrayList<>(zeroSet), function);
   }
 
   private double newtonMethod(BaseFunction function, double x0) {
@@ -89,7 +82,7 @@ public class NewtonMethod implements ZeroPointProcess{
         break;
       }
     }
-    return round(xn, 4);
+    return round(xn);
   }
 
   private double deltaX(double x0, double x1) {
@@ -105,23 +98,30 @@ public class NewtonMethod implements ZeroPointProcess{
     }
   }
 
-  private double round(double value, int decimalPositions) {
+  private double round(double value) {
 
-    double factor = Math.pow(10, decimalPositions);
+    double factor = Math.pow(10, 4);
     return (Math.round(value * factor) / factor);
   }
 
   private int[] getIntervall(String function) {
 
     int[] intervall = new int[2];
-    String start = "NULL";
-    String end = "NULL";
+    System.out.println("Gebe das Intervall an fur die Nullstellensuche von f(x) = " + function);
 
-    while (isNotInteger(start, end)) {
-      System.out.println("Gebe das Intervall an fur die Nullstellensuche von f(x) = " + function);
-      System.out.println("Start: ");
+    System.out.print("Start: ");
+    String start = scanner.nextLine().strip().replace(" ", "");
+    while (isNotInteger(start)) {
+      System.out.println("Fehlerhafte Eingabe! Geben Sie einen ganzzahligen Wert ein.");
+      System.out.print("Start: ");
       start = scanner.nextLine().strip().replace(" ", "");
-      System.out.println("Ende: ");
+    }
+
+    System.out.print("Ende: ");
+    String end = scanner.nextLine().strip().replace(" ", "");
+    while (isNotInteger(end)) {
+      System.out.println("Fehlerhafte Eingabe! Geben Sie einen ganzzahligen Wert ein.");
+      System.out.print("Ende: ");
       end = scanner.nextLine().strip().replace(" ", "");
     }
     intervall[0] = Integer.parseInt(start);
@@ -129,38 +129,64 @@ public class NewtonMethod implements ZeroPointProcess{
     return intervall;
   }
 
-  private boolean isNotInteger(String a, String b) {
+  private List<Double> getZeroPointCandidates(int start, int end, BaseFunction function) {
 
-    for (int i = 0; i < a.length() ; i++) {
-      if (i == 0) {
-        if (Character.isDigit(a.charAt(i))) {
-          continue;
-        } else if (a.charAt(i) == '-' || a.charAt(i) == '+') {
-          continue;
-        } else return true;
-      }
-      if (!Character.isDigit(a.charAt(i))) {
-        return true;
+    List<Double> zeroPointAreas = new ArrayList<>();
+    /*
+    Math.signum() zeigt an, ob der als Argument übergebene Wert eine positive oder negative Zahl
+    oder 0 ist.
+    */
+    double sign1 = Math.signum(function.f(start));
+    for (int i = (start + 1); i <= end; i++) {
+      double sign2 = Math.signum(function.f(i));
+      if (sign2 != sign1) {
+        zeroPointAreas.add(i - 0.5);
+        sign1 = sign2;
       }
     }
-
-    for (int j = 0; j < b.length() ; j++) {
-      if (j == 0) {
-        if (Character.isDigit(b.charAt(j))) {
-          continue;
-        } else if (b.charAt(j) == '-' || b.charAt(j) == '+') {
-          continue;
-        } else return true;
-      }
-      if (!Character.isDigit(b.charAt(j))) {
-        return true;
-      }
-    }
-    return false;
+    return zeroPointAreas;
   }
 
-  private boolean zeroAlreadyFound(double xZero, ArrayList<Double> zeros, double delta) {
+  private boolean isNotInteger(String str) {
 
-    return false;
+    boolean isNotInt = false;
+
+    for (int i = 0; i < str.length() ; i++) {
+      if (i == 0) {
+        if (Character.isDigit(str.charAt(i))) {
+          continue;
+        } else if (str.charAt(i) == '-' || str.charAt(i) == '+') {
+          continue;
+        } else {
+          isNotInt = true; // is not integer
+        }
+      }
+      if (!Character.isDigit(str.charAt(i))) {
+        isNotInt = true;
+      }
+    }
+    if(str.isEmpty()) {
+      isNotInt = true;
+    }
+    if(str.contains("-") && str.length() == 1) {
+      isNotInt = true;
+    }
+    if (str.contains("+") && str.length() == 1) {
+      isNotInt = true;
+    }
+    return isNotInt;
+  }
+
+  private void printZeroPoints(List<Double> zeroPoints, BaseFunction f) {
+
+    System.out.println("Nullstellen von f(x) = " + f.toString() + ": ");
+    for (double d : zeroPoints) {
+      if(!String.valueOf(d).startsWith("-")){
+        System.out.print("+" + d);
+      } else {
+        System.out.print(d + " | ");
+      }
+    }
+    System.out.println("\n___________________________\n");
   }
 }

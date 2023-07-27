@@ -19,16 +19,7 @@ public class Main {
     functions.add(new Function_3());
 
     for (BaseFunction f : functions) {
-      List<Double> zeroPoints = newtonMethod.zeroPoints(f);
-      System.out.println("Nullstellen von f(x) = " + f.toString() + ": ");
-      for (double d : zeroPoints) {
-        if(!String.valueOf(d).startsWith("-")){
-          System.out.print("+" + d);
-        } else {
-          System.out.print(d + " | ");
-        }
-      }
-      System.out.println("\n___________________________\n");
+      newtonMethod.zeroPoints(f);
     }
   }
 }

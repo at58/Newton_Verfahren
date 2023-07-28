@@ -1,14 +1,15 @@
 package dynamische_variante;
 
+import java.util.List;
+
 public class Main {
 
   public static void main(String[] args) {
 
-    //MyFunction.inputFormula();
-    String[] terms = new String[] {"-2,5x","0,5x","-2", "-1,009", "2", "2,5490", "-x", "x"};
 
-    for (String s : terms) {
-      System.out.println(s + "\t\t" + MyFunction.validateFormula(s));
+    List<Double> result = Newton_Dynamic.process();
+    for (Double d : result) {
+      System.out.println(d);
     }
   }
 }

@@ -1,65 +1,87 @@
+/*
 package dynamische_variante;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Set;
 
+*/
 /**
  *
- */
+ *//*
+
 public class MyFunction {
 
-  private static String formula;
+
+  private static final Scanner scanner = new Scanner(System.in);
 
   public static void inputFormula() {
 
-    System.out.println("Geben Sie die Funktion ein, dessen Nullstellen via Newton-Verfahren berechnet werden soll: ");
+    System.out.println("Geben eine Funktion ein fur die Suche nach Nullstellen mit dem <<Newton-Verfahren>>: ");
     System.out.print("f(x)= ");
-    Scanner scanner = new Scanner(System.in);
-    formula = scanner.nextLine();
-    while (!validateFormula(formula)) {
-      System.out.println("Die Funktion enthält invalide Zeichen. Wiederholen Sie die Eingabe:");
-      formula = scanner.nextLine();
-    }
-    prepareFormula();
 
+    formula = getInput();
+    while (!validateFormula()) {
+      System.out.println("Die Eingabe ist invalide. Wiederholen die Eingabe:");
+      System.out.print("f(x)= ");
+      formula = scanner.nextLine();
+      System.out.println(formula);
+    }
+
+    prepareFormula();
+  }
+
+  */
+/**
+   *        + - * /    ^ pow() sqrt() ! sin cos tan e ln() log()
+   *
+   * @return
+   *//*
+
+  private static Map<Character, String> getInput() {
+
+    String input = scanner.nextLine();
+    String prepared = prepareFormula(input);
+    char[] operators = new char[] {'*','/','+','-'};
+    Map<Character, String> splitTerm = new HashMap<>();
+
+    for (char o : operators) {
+      if (input.contains(String.valueOf(o))) {
+        int index = prepared.indexOf(o);
+      }
+    }
   }
 
   public static boolean validateFormula(String formula) {
-    // TODO: implement whitelist processing
-    boolean result = false;
-    String regex = "(-?[0-9]+|-?x|(-?[0-9]*(?<=[0-9]),?(?<=,)[0-9]+x?))";
-    Pattern whitelist = Pattern.compile(regex);
 
+    boolean isValid = false;
+    String regex = "(-?[0-9]+X?|-?X|(-?[0-9]*(?<=[0-9]),?(?<=,)[0-9]+X?))";
 
-    Matcher matcher = whitelist.matcher(formula);
     if(formula.matches(regex)) {
-      result = true;
+      isValid = true;
     }
-    return result;
+    return isValid;
   }
 
-  private static void prepareFormula() {
-    formula = formula.strip();
-    formula = formula.replace(" ", "");
-    formula = formula.replace(",", ".");
-    formula = formula.toLowerCase();
-    StringBuilder old = new StringBuilder(formula);
+  private static String prepareFormula(String formula) {
+    String result = formula.strip();
+    result = result.toLowerCase();
+    StringBuilder old = new StringBuilder(result);
     while (old.toString().contains("x")) {
       int index = old.indexOf("x");
       if (old.charAt(index-1) != '*') {
         System.out.println(index);
         old.replace(index, (index + 1), "*X");
-        System.out.println(old);
       }
     }
-    formula = old.toString();
-    System.out.println(formula);
+    result = old.toString();
+    return result;
   }
 
   private static double f(double x) {
 
-    double result = 0;
+    double y = 0;
     StringBuilder sb = new StringBuilder();
     String sub = "";
     // 3*x^2+2*x-5
@@ -71,7 +93,7 @@ public class MyFunction {
         sb.append(c);
       }
     }
-    return result;
+    return y;
   }
 
   private static double addition(double a, double b) {
@@ -94,5 +116,5 @@ public class MyFunction {
 
     return 0;
   }
-
 }
+*/

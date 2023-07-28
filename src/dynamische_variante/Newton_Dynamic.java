@@ -1,5 +1,7 @@
 package dynamische_variante;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -7,21 +9,226 @@ import java.util.regex.Pattern;
 public class Newton_Dynamic {
 
   static final Scanner scanner = new Scanner(System.in);
+  static final double epsilon = 0.01;
+  static String function;
 
   public static List<Double> process() {
 
     System.out.println("Funktion eingeben: ");
     System.out.print("f(x)= ");
-    String function = scanner.nextLine();
+    String unpreparedFunc = scanner.nextLine().strip();
+    function = prepareInput(unpreparedFunc);
 
-    String prepared = prepareInput(function);
+    List<Double> zeroPointAreas;
+    List<Double> zeroPoints = new ArrayList<>();
 
-    System.out.println("un "+prepared);
-    return null;
+    boolean repeat = true;
+    while(repeat) {
+      int[] intervall = getIntervall();
+      int start = intervall[0];
+      int end = intervall[1];
+
+      zeroPointAreas = getZeroPointCandidates(start, end);
+
+      if (zeroPointAreas.isEmpty()) {
+        System.out.println("Es gibt keine Nullstellen im vorgegebenen Intervall!");
+        System.out.println("Soll ein neues Intervall fur f(x) = " + function
+                               + " untersucht werden?\nj = ja\nn = nein");
+        String yesOrNo = scanner.nextLine();
+        if (!yesOrNo.equals("j")) {
+          repeat = false;
+        }
+      }
+      else {
+        System.out.println("Folgende Xo-Werte werden fur die Nullstellensuche verwendet: ");
+        for (double point : zeroPointAreas) {
+          System.out.print(point + " ");
+        }
+        System.out.println();
+        for (double x : zeroPointAreas) {
+          zeroPoints.add(newtonMethod(x));
+        }
+        repeat = false;
+      }
+    }
+    return zeroPoints;
   }
 
-  private static String prepareInput(String function) {
-    String prepared = function.toLowerCase();
+  public static String getDerivation(String function) {
+
+    String derivation;
+
+    if (function.contains("x")) {
+      String[] additionTerms = removeConstants(function.split("\\+"),'+');
+      String[] subtractionTerms = removeConstants(function.split("-"), '-');
+
+      String constantsFreeTerm = joinTerm(additionTerms, subtractionTerms);
+      return constantsFreeTerm;
+
+/*      char[] functionArray = function.toCharArray();
+      List<Character> charList = new ArrayList<>();
+      for (char c : functionArray) {
+        charList.add(c);
+      }
+
+      int position = 0;
+      for(int i = 0; i < functionArray.length; i++) {
+        if(functionArray[i] == 'x') {
+          position = i;
+          if (charList.get(i+1) != '^') {
+
+          }
+        }
+      }*/
+
+    } else {
+      derivation = "0";
+    }
+    return "";
+  }
+
+  private static String joinTerm(String[] additions, String[] subtractions) {
+    StringBuilder constantsFreeTerm = new StringBuilder();
+
+    for (String add : additions) {
+      constantsFreeTerm.append(add).append("+");
+    }
+    int lastIndex = constantsFreeTerm.length()-1;
+
+    constantsFreeTerm.replace(lastIndex, lastIndex+1, "-");
+
+    for (String sub: subtractions) {
+      constantsFreeTerm.append(sub).append("-");
+    }
+    lastIndex = constantsFreeTerm.length()-1;
+    constantsFreeTerm.replace(lastIndex, lastIndex+1, "");
+
+    return constantsFreeTerm.toString();
+  }
+
+  private static String[] removeConstants(String[] terms, char operator) {
+    String[] result = new String[terms.length];
+    String splitter;
+    if (operator == '+') {
+      splitter = "-";
+    }
+    else {
+      splitter = "\\+";
+    }
+
+    for (int i = 0; i < terms.length; i++) {
+      if (terms[i].contains("x")) {
+        if (terms[i].contains(splitter)) {
+          String[] spitted = terms[i].split(splitter);
+          result[i] = spitted[0];
+        } else {
+          result[i] = terms[i];
+        }
+      } else {
+        terms[i] = "";
+      }
+    }
+    int counter = 0;
+    for (String s: result) {
+      if (s != null) {
+        counter++;
+      }
+    }
+    int index = 0;
+    String[] finalResult = new String[counter];
+    for (String s : result) {
+      if (s != null) {
+        finalResult[index++] = s;
+      }
+    }
+    return finalResult;
+  }
+
+  private static double newtonMethod(double Xo) {
+    double xn = Xo;
+    double xn_min_1;
+
+    while (true) {
+      xn_min_1 = xn;
+      xn = xn_min_1 - (eval(function,String.valueOf(xn_min_1)) / eval(function, String.valueOf(xn_min_1)));
+      if (deltaX(xn, xn_min_1) < epsilon
+          || isAlmostZero(eval(function,String.valueOf(xn)))) {
+        break;
+      }
+    }
+    return round(xn);
+  }
+
+
+  private static double round(double value) {
+
+    double factor = Math.pow(10, 4);
+    return (Math.round(value * factor) / factor);
+  }
+
+  private static double deltaX(double x0, double x1) {
+    return Math.abs(x0-x1);
+  }
+
+  private static boolean isAlmostZero(double value) {
+
+    if (value <= 0.001 && value >= -0.001) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private static List<Double> getZeroPointCandidates(int start, int end) {
+
+    List<Double> zeroPointAreas = new ArrayList<>();
+    String beginn = String.valueOf(start);
+    String ende = String.valueOf(end);
+    /*
+    Math.signum() zeigt an, ob der als Argument übergebene Wert eine positive oder negative Zahl
+    oder 0 ist.
+    */
+    double sign_1 = Math.signum(eval(function, beginn));
+    for (int i = (start + 1); i <= end; i++) {
+      double sign_2 = Math.signum(eval(function, String.valueOf(i)));
+      if (sign_2 != sign_1) {
+        zeroPointAreas.add(i - 0.5);
+        sign_1 = sign_2;
+      }
+    }
+    return zeroPointAreas;
+  }
+
+  private static int[] getIntervall() {
+
+    int[] intervall = new int[2];
+    System.out.println("Gebe das Intervall an fur die Nullstellensuche von f(x) = " + function);
+
+    System.out.print("Start: ");
+    String start = scanner.nextLine().strip().replace(" ", "");
+    while (isNotInteger(start)) {
+      System.out.println("Fehlerhafte Eingabe! Geben Sie einen ganzzahligen Wert ein.");
+      System.out.print("Start: ");
+      start = scanner.nextLine().strip().replace(" ", "");
+    }
+
+    System.out.print("Ende: ");
+    String end = scanner.nextLine().strip().replace(" ", "");
+    while (isNotInteger(end)) {
+      System.out.println("Fehlerhafte Eingabe! Geben Sie einen ganzzahligen Wert ein.");
+      System.out.print("Ende: ");
+      end = scanner.nextLine().strip().replace(" ", "");
+    }
+    intervall[0] = Integer.parseInt(start);
+    intervall[1] = Integer.parseInt(end);
+    return intervall;
+  }
+
+  public static String prepareInput(String function) {
+    String prepared = function.toLowerCase()
+                              .replaceAll("e","2.718282")
+                              .replaceAll("π", "3.14159")
+                              .replaceAll("pi", "3.14159");
     int index = 0;
     if(prepared.startsWith("-")) {
       index++;
@@ -33,7 +240,6 @@ public class Newton_Dynamic {
         index++;
       }
     }
-    System.out.println("index " + index);
     for (int i = index; i < prepared.length(); i++) {
       if (prepared.charAt(i) == 'x') {
         if(isNumber(prepared.charAt(i-1))) {
@@ -61,31 +267,6 @@ public class Newton_Dynamic {
     if (function.matches(blacklist)){
       return true;
     } else return false;
-  }
-
-  private int[] getIntervall(String function) {
-
-    int[] intervall = new int[2];
-    System.out.println("Gebe das Intervall an fur die Nullstellensuche von f(x) = " + function);
-
-    System.out.print("Start: ");
-    String start = scanner.nextLine().strip().replace(" ", "");
-    while (isNotInteger(start)) {
-      System.out.println("Fehlerhafte Eingabe! Geben Sie einen ganzzahligen Wert ein.");
-      System.out.print("Start: ");
-      start = scanner.nextLine().strip().replace(" ", "");
-    }
-
-    System.out.print("Ende: ");
-    String end = scanner.nextLine().strip().replace(" ", "");
-    while (isNotInteger(end)) {
-      System.out.println("Fehlerhafte Eingabe! Geben Sie einen ganzzahligen Wert ein.");
-      System.out.print("Ende: ");
-      end = scanner.nextLine().strip().replace(" ", "");
-    }
-    intervall[0] = Integer.parseInt(start);
-    intervall[1] = Integer.parseInt(end);
-    return intervall;
   }
 
   private static boolean isNotInteger(String str) {
@@ -118,9 +299,9 @@ public class Newton_Dynamic {
     return isNotInt;
   }
 
-  public static double eval(String function, char argument) {
+  private static double eval(String function, String argument) {
 
-    final String str = function.replaceAll("x", String.valueOf(argument));
+    final String str = function.replaceAll("x", argument);
 
     return new Object() {
       int pos = -1, ch;

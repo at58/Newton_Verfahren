@@ -1,7 +1,6 @@
 package dynamische_variante;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -56,35 +55,94 @@ public class Newton_Dynamic {
 
   public static String getDerivation(String function) {
 
-    String derivation;
+    String derivation = "";
 
     if (function.contains("x")) {
-      String[] additionTerms = removeConstants(function.split("\\+"),'+');
-      String[] subtractionTerms = removeConstants(function.split("-"), '-');
+      // eliminate all constants without x
+      String constantsFreeTerm = eliminateConstants(function);
 
-      String constantsFreeTerm = joinTerm(additionTerms, subtractionTerms);
-      return constantsFreeTerm;
+      StringBuilder functionBuilder = new StringBuilder();
 
-/*      char[] functionArray = function.toCharArray();
-      List<Character> charList = new ArrayList<>();
-      for (char c : functionArray) {
-        charList.add(c);
-      }
+      // differentiate x
+      int length = (constantsFreeTerm.length() - 1);
+      for (int i = 0; i <= length; i++) {
 
-      int position = 0;
-      for(int i = 0; i < functionArray.length; i++) {
-        if(functionArray[i] == 'x') {
-          position = i;
-          if (charList.get(i+1) != '^') {
-
+        functionBuilder.append(constantsFreeTerm.charAt(i));
+        if (constantsFreeTerm.charAt(i) == 'x') {
+          if (i == length) {
+            functionBuilder.replace(i, i+1, "1");
+            break;
+          }
+          if (constantsFreeTerm.charAt(i + 1) != '^') {
+            functionBuilder.replace(i, i+1, "1");
+          }
+          else { // x^...
+            i++;
+            String exponent = getExponent(constantsFreeTerm.substring(i + 1));
+            Double newDoubleExp = null;
+            Integer newIntExp = null;
+            if (exponent.contains(",")) {
+              String adapted = exponent.replace(",", ".");
+              newDoubleExp = Double.parseDouble(adapted) - 1;
+            } else {
+              newIntExp = Integer.parseInt(exponent) - 1;
+            }
+            int exponentSize = (exponent.length());
+            functionBuilder.deleteCharAt(functionBuilder.length()-1);
+            functionBuilder.append(exponent).append("*x^");
+            if (newIntExp == null) {
+              functionBuilder.append(newDoubleExp);
+            } else {
+              functionBuilder.append(newIntExp);
+            }
+            i += exponentSize;
           }
         }
-      }*/
-
+      }
+      derivation = functionBuilder.toString();
     } else {
       derivation = "0";
     }
-    return "";
+    return derivation;
+  }
+
+  private static String getExponent(String subString) {
+
+    int rightBorder = 0;
+    for (int i = 0; i < subString.length(); i++) {
+      if (!Character.isDigit(subString.charAt(i))
+          && subString.charAt(i) != ',') {
+        rightBorder = i;
+        break;
+      }
+    }
+    String result = subString.substring(0, rightBorder);
+
+    return result;
+  }
+
+  private static String eliminateConstants(String function) {
+
+    StringBuilder derivation = new StringBuilder();
+
+    int leftBorder = 0;
+
+    for (int i = function.startsWith("-") ? 1 : 0; i < function.length(); i++) {
+      if (function.charAt(i) == '+'
+          || function.charAt(i) == '-') {
+
+        String subString = function.substring(leftBorder, i);
+        if (subString.contains("x")) {
+          derivation.append(subString);
+        }
+        leftBorder = i++;
+      }
+    }
+    String lastPart = function.substring(leftBorder);
+    if (lastPart.contains("x")) {
+      derivation.append(lastPart);
+    }
+    return derivation.toString();
   }
 
   private static String joinTerm(String[] additions, String[] subtractions) {
@@ -150,9 +208,9 @@ public class Newton_Dynamic {
 
     while (true) {
       xn_min_1 = xn;
-      xn = xn_min_1 - (eval(function,String.valueOf(xn_min_1)) / eval(function, String.valueOf(xn_min_1)));
+      xn = xn_min_1 - (calc(function, String.valueOf(xn_min_1)) / calc(function, String.valueOf(xn_min_1)));
       if (deltaX(xn, xn_min_1) < epsilon
-          || isAlmostZero(eval(function,String.valueOf(xn)))) {
+          || isAlmostZero(calc(function, String.valueOf(xn)))) {
         break;
       }
     }
@@ -188,9 +246,9 @@ public class Newton_Dynamic {
     Math.signum() zeigt an, ob der als Argument übergebene Wert eine positive oder negative Zahl
     oder 0 ist.
     */
-    double sign_1 = Math.signum(eval(function, beginn));
+    double sign_1 = Math.signum(calc(function, beginn));
     for (int i = (start + 1); i <= end; i++) {
-      double sign_2 = Math.signum(eval(function, String.valueOf(i)));
+      double sign_2 = Math.signum(calc(function, String.valueOf(i)));
       if (sign_2 != sign_1) {
         zeroPointAreas.add(i - 0.5);
         sign_1 = sign_2;
@@ -299,7 +357,7 @@ public class Newton_Dynamic {
     return isNotInt;
   }
 
-  private static double eval(String function, String argument) {
+  private static double calc(String function, String argument) {
 
     final String str = function.replaceAll("x", argument);
 

@@ -12,19 +12,10 @@ public class Main {
       System.out.println(d);
     }*/
 
-    String pre = Newton_Dynamic.prepareInput("3x");
-    System.out.println(pre);
+    System.out.println(Newton_Dynamic.getDerivation("x-2*x^3,5-x^2+x-10"));
+/*    StringBuilder sb = new StringBuilder("Hey");
+    sb.insert(sb.length()-1, "i");
+    System.out.println(sb);*/
 
-    String foo = "";
-    String[] bo = new String[1];
-    for (String s:bo) {
-      System.out.println(s);
-    }
-    StringBuilder sb = new StringBuilder("Hallo");
-    int lastIndex = sb.length()-1;
-    sb.replace(lastIndex, lastIndex+1, "-");
-    System.out.println(sb);
-
-    System.out.println(Newton_Dynamic.getDerivation("2x+3-4*1-3x^2+x-1+3*x"));
   }
 }

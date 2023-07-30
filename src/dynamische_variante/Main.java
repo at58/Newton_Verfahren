@@ -1,7 +1,5 @@
 package dynamische_variante;
 
-import java.util.List;
-
 public class Main {
 
   public static void main(String[] args) {
@@ -12,10 +10,14 @@ public class Main {
       System.out.println(d);
     }*/
 
-    System.out.println(Newton_Dynamic.getDerivation("x-2*x^3,5-x^2+x-10"));
-/*    StringBuilder sb = new StringBuilder("Hey");
-    sb.insert(sb.length()-1, "i");
-    System.out.println(sb);*/
+    //System.out.println(Newton_Dynamic.getDerivation("x-2*x^3,5-x^2+x-10"));
+    //System.out.println(Newton_Dynamic.getDerivation("x^2+x^2,5+2*x+3-x"));
+    //System.out.println(Newton_Dynamic.getDerivation("x^2+x+x^1,5+x^1"));
+    System.out.println(Newton_Dynamic.getExponent("2"));
 
+/*    String[] str = new String[] {"x^2", "10", "1", "1,5", "2"};
+    for (String s : str) {
+      System.out.println(s + " = " + Newton_Dynamic.isDegree_1(s, 0));
+    }*/
   }
 }

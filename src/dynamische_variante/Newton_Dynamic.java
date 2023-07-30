@@ -59,66 +59,105 @@ public class Newton_Dynamic {
 
     if (function.contains("x")) {
       // eliminate all constants without x
-      String constantsFreeTerm = eliminateConstants(function);
+      String constantFree = eliminateConstants(function);
 
-      StringBuilder functionBuilder = new StringBuilder();
+      StringBuilder exponentDerived = new StringBuilder();
 
       // differentiate x
-      int length = (constantsFreeTerm.length() - 1);
-      for (int i = 0; i <= length; i++) {
+      int length = (constantFree.length() - 1);
 
-        functionBuilder.append(constantsFreeTerm.charAt(i));
-        if (constantsFreeTerm.charAt(i) == 'x') {
-          if (i == length) {
-            functionBuilder.replace(i, i+1, "1");
-            break;
-          }
-          if (constantsFreeTerm.charAt(i + 1) != '^') {
-            functionBuilder.replace(i, i+1, "1");
-          }
-          else { // x^...
-            i++;
-            String exponent = getExponent(constantsFreeTerm.substring(i + 1));
-            Double newDoubleExp = null;
-            Integer newIntExp = null;
-            if (exponent.contains(",")) {
-              String adapted = exponent.replace(",", ".");
-              newDoubleExp = Double.parseDouble(adapted) - 1;
-            } else {
-              newIntExp = Integer.parseInt(exponent) - 1;
+      for (int i = 0; i <= length; i++) {
+        exponentDerived.append(constantFree.charAt(i));
+        if (constantFree.charAt(i) == 'x') {
+          if (i != length) {
+            if (constantFree.charAt(i+1) == '^' ) { // x^...
+              i++;
+              String exponent = getExponent(constantFree.substring(i + 1))
+                  .replace(",",".");
+              double newExp = calc(exponent + "-1","0");
+              String newExpStr = String.valueOf(newExp);
+              if (isInteger(newExpStr)) {
+                newExpStr = newExpStr.substring(0, newExpStr.indexOf('.'));
+              } else {
+                newExpStr = newExpStr.replace(".", ",");
+              }
+              exponentDerived.deleteCharAt(exponentDerived.length()-1);
+              exponentDerived.append(exponent.replace(".", ","))
+                             .append("*x^")
+                             .append(newExpStr);
+              i = i + exponent.length();
             }
-            int exponentSize = (exponent.length());
-            functionBuilder.deleteCharAt(functionBuilder.length()-1);
-            functionBuilder.append(exponent).append("*x^");
-            if (newIntExp == null) {
-              functionBuilder.append(newDoubleExp);
-            } else {
-              functionBuilder.append(newIntExp);
-            }
-            i += exponentSize;
           }
         }
       }
-      derivation = functionBuilder.toString();
+      System.out.println(exponentDerived);
+      derivation = deriveDegreeOne(exponentDerived.toString());
     } else {
       derivation = "0";
     }
     return derivation;
   }
 
-  private static String getExponent(String subString) {
-
-    int rightBorder = 0;
-    for (int i = 0; i < subString.length(); i++) {
-      if (!Character.isDigit(subString.charAt(i))
-          && subString.charAt(i) != ',') {
-        rightBorder = i;
-        break;
+  private static String deriveDegreeOne(String function) {
+    StringBuilder derivationBuilder = new StringBuilder();
+    for (int i = 0; i < function.length(); i++) {
+      derivationBuilder.append(function.charAt(i));
+      if (function.charAt(i) == 'x') {
+        if (function.charAt(i+1) != '^') {
+          derivationBuilder.replace(i, i+1, "1");
+        } else {
+          if (isDegree_1(function, i+2)) {
+            i = i+2;
+          }
+        }
       }
     }
-    String result = subString.substring(0, rightBorder);
+    return derivationBuilder.toString();
+  }
 
-    return result;
+  public static boolean isDegree_1(String function, int start) {
+    boolean isDegree_1;
+    int index = start;
+    if (function.charAt(index) == '1') {
+      isDegree_1 = true;
+      index++;
+      if(index != function.length()-1) {
+        if (Character.isDigit(function.charAt(index))) {
+          isDegree_1 = false;
+        }
+      }
+    } else {
+      isDegree_1 = false;
+    }
+    return isDegree_1;
+  }
+
+  private static boolean isInteger(String number) {
+    String decimal = number.substring(number.indexOf(".") + 1);
+    for (char c : decimal.toCharArray()) {
+      if (c != '0') {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public static String getExponent(String subString) {
+    StringBuilder exponentBuilder;
+    if (subString.length() == 1) {
+      return subString;
+    } else {
+      exponentBuilder = new StringBuilder();
+      int index = 0;
+      while (Character.isDigit(subString.charAt(index)) || subString.charAt(index) == ',') {
+        exponentBuilder.append(subString.charAt(index));
+        index++;
+        if (index == subString.length()-1) {
+          break;
+        }
+      }
+    }
+    return exponentBuilder.toString();
   }
 
   private static String eliminateConstants(String function) {

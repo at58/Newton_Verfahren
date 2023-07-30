@@ -142,6 +142,7 @@ public class Newton_Dynamic {
     return true;
   }
 
+  // Bug free
   public static String getExponent(String subString) {
     StringBuilder exponentBuilder;
     if (subString.length() == 1) {
@@ -160,6 +161,7 @@ public class Newton_Dynamic {
     return exponentBuilder.toString();
   }
 
+  // Bug free
   private static String eliminateConstants(String function) {
 
     StringBuilder derivation = new StringBuilder();
@@ -182,63 +184,6 @@ public class Newton_Dynamic {
       derivation.append(lastPart);
     }
     return derivation.toString();
-  }
-
-  private static String joinTerm(String[] additions, String[] subtractions) {
-    StringBuilder constantsFreeTerm = new StringBuilder();
-
-    for (String add : additions) {
-      constantsFreeTerm.append(add).append("+");
-    }
-    int lastIndex = constantsFreeTerm.length()-1;
-
-    constantsFreeTerm.replace(lastIndex, lastIndex+1, "-");
-
-    for (String sub: subtractions) {
-      constantsFreeTerm.append(sub).append("-");
-    }
-    lastIndex = constantsFreeTerm.length()-1;
-    constantsFreeTerm.replace(lastIndex, lastIndex+1, "");
-
-    return constantsFreeTerm.toString();
-  }
-
-  private static String[] removeConstants(String[] terms, char operator) {
-    String[] result = new String[terms.length];
-    String splitter;
-    if (operator == '+') {
-      splitter = "-";
-    }
-    else {
-      splitter = "\\+";
-    }
-
-    for (int i = 0; i < terms.length; i++) {
-      if (terms[i].contains("x")) {
-        if (terms[i].contains(splitter)) {
-          String[] spitted = terms[i].split(splitter);
-          result[i] = spitted[0];
-        } else {
-          result[i] = terms[i];
-        }
-      } else {
-        terms[i] = "";
-      }
-    }
-    int counter = 0;
-    for (String s: result) {
-      if (s != null) {
-        counter++;
-      }
-    }
-    int index = 0;
-    String[] finalResult = new String[counter];
-    for (String s : result) {
-      if (s != null) {
-        finalResult[index++] = s;
-      }
-    }
-    return finalResult;
   }
 
   private static double newtonMethod(double Xo) {

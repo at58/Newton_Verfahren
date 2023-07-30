@@ -3,7 +3,6 @@ package dynamische_variante;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 public class Newton_Dynamic {
 
@@ -55,64 +54,84 @@ public class Newton_Dynamic {
 
   public static String getDerivation(String function) {
 
-    String derivation = "";
+    String derivation;
 
     if (function.contains("x")) {
       // eliminate all constants without x
       String constantFree = eliminateConstants(function);
+      // differentiate by x
+      String differentiated = differentiate_X(constantFree);
 
-      StringBuilder exponentDerived = new StringBuilder();
-
-      // differentiate x
-      int length = (constantFree.length() - 1);
-
-      for (int i = 0; i <= length; i++) {
-        exponentDerived.append(constantFree.charAt(i));
-        if (constantFree.charAt(i) == 'x') {
-          if (i != length) {
-            if (constantFree.charAt(i+1) == '^' ) { // x^...
-              i++;
-              String exponent = getExponent(constantFree.substring(i + 1))
-                  .replace(",",".");
-              double newExp = calc(exponent + "-1","0");
-              String newExpStr = String.valueOf(newExp);
-              if (isInteger(newExpStr)) {
-                newExpStr = newExpStr.substring(0, newExpStr.indexOf('.'));
-              } else {
-                newExpStr = newExpStr.replace(".", ",");
-              }
-              exponentDerived.deleteCharAt(exponentDerived.length()-1);
-              exponentDerived.append(exponent.replace(".", ","))
-                             .append("*x^")
-                             .append(newExpStr);
-              i = i + exponent.length();
-            }
-          }
-        }
-      }
-      System.out.println(exponentDerived);
-      derivation = deriveDegreeOne(exponentDerived.toString());
+      derivation = deriveDegree_1(differentiated);
     } else {
       derivation = "0";
     }
     return derivation;
   }
 
-  private static String deriveDegreeOne(String function) {
-    StringBuilder derivationBuilder = new StringBuilder();
-    for (int i = 0; i < function.length(); i++) {
-      derivationBuilder.append(function.charAt(i));
+  private static String differentiate_X(String function) {
+
+    StringBuilder exponentDerived = new StringBuilder();
+    int length = (function.length() - 1);
+
+    for (int i = 0; i <= length; i++) {
+      exponentDerived.append(function.charAt(i));
       if (function.charAt(i) == 'x') {
-        if (function.charAt(i+1) != '^') {
-          derivationBuilder.replace(i, i+1, "1");
-        } else {
-          if (isDegree_1(function, i+2)) {
-            i = i+2;
+        if (i != length) {
+          if (function.charAt(i+1) == '^' ) { // x^...
+            i++;
+            String exponent = getExponent(function.substring(i + 1))
+                .replace(",",".");
+            double newExp = calc(exponent + "-1","0");
+            String newExpStr = String.valueOf(newExp);
+            if (isInteger(newExpStr)) {
+              newExpStr = newExpStr.substring(0, newExpStr.indexOf('.'));
+            } else {
+              newExpStr = newExpStr.replace(".", ",");
+            }
+            exponentDerived.deleteCharAt(exponentDerived.length()-1);
+            exponentDerived.append(exponent.replace(".", ","))
+                           .append("*x^")
+                           .append(newExpStr);
+            i = i + exponent.length();
           }
         }
       }
     }
-    return derivationBuilder.toString();
+    return exponentDerived.toString();
+  }
+
+  private static String deriveDegree_1(String function) {
+
+    StringBuilder builder = new StringBuilder();
+    int length = (function.length() -1);
+    int index = 0;
+
+    while (index <= length) {
+      char character = function.charAt(index);
+      builder.append(character);
+      if (character == 'x') {
+        int currentBuilderIndex = builder.length() - 1;
+        if (index == length) {
+          builder.replace(currentBuilderIndex, currentBuilderIndex + 1, "1");
+        } else {
+          if (function.charAt(index+1) != '^') {
+            builder.replace(currentBuilderIndex, currentBuilderIndex + 1, "1");
+          } else if (function.charAt(index+1) == '^') {
+            String exponent = getExponent(function.substring(index+2));
+            if (exponent.equals("0")) {
+              builder.replace(currentBuilderIndex, currentBuilderIndex + 1, "1");
+              index += 2;
+            }
+            if (exponent.equals("1")) {
+              index += 2;
+            }
+          }
+        }
+      }
+      index++;
+    }
+    return builder.toString();
   }
 
   public static boolean isDegree_1(String function, int start) {
@@ -143,7 +162,7 @@ public class Newton_Dynamic {
   }
 
   // Bug free
-  public static String getExponent(String subString) {
+  private static String getExponent(String subString) {
     StringBuilder exponentBuilder;
     if (subString.length() == 1) {
       return subString;
@@ -200,7 +219,6 @@ public class Newton_Dynamic {
     }
     return round(xn);
   }
-
 
   private static double round(double value) {
 
@@ -266,7 +284,7 @@ public class Newton_Dynamic {
     return intervall;
   }
 
-  public static String prepareInput(String function) {
+  private static String prepareInput(String function) {
     String prepared = function.toLowerCase()
                               .replaceAll("e","2.718282")
                               .replaceAll("π", "3.14159")
@@ -299,16 +317,6 @@ public class Newton_Dynamic {
 
   private static boolean isNumber(char c) {
     return Character.isDigit(c);
-  }
-
-  @Deprecated
-  private static boolean isValid(String function) {
-
-    String blacklist = "^[0-9xX+\\-*/\\^(),e]";
-    Pattern pattern = Pattern.compile(blacklist);
-    if (function.matches(blacklist)){
-      return true;
-    } else return false;
   }
 
   private static boolean isNotInteger(String str) {

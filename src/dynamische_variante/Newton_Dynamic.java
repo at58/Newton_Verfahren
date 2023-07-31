@@ -284,13 +284,19 @@ public class Newton_Dynamic {
     return intervall;
   }
 
+  /**
+   * Input preparation for {@link Newton_Dynamic#calc(String, String)}
+   *
+   * @param function the unprepared function
+   * @return prepared function
+   */
   public static String prepareInput(String function) {
     String prepared = function.toLowerCase()
                               .replaceAll("e","2.718282")
                               .replaceAll("π", "3.14159")
                               .replaceAll("pi", "3.14159");
 
-    String tidyFunction = tidyUp(prepared);
+    String tidyFunction = tidyUpBrackets(prepared);
 
     // skipping leading + or - x by adapting the index
     int index = 0;
@@ -306,7 +312,8 @@ public class Newton_Dynamic {
     }
     for (int i = index; i < tidyFunction.length(); i++) {
       if (tidyFunction.charAt(i) == 'x') {
-        if(Character.isDigit(tidyFunction.charAt(i-1))) {
+        if(Character.isDigit(tidyFunction.charAt(i-1))
+            || tidyFunction.charAt(i-1) == ')') {
           StringBuilder builder = new StringBuilder();
           builder.append(tidyFunction, 0, i);
           builder.append("*");
@@ -319,7 +326,7 @@ public class Newton_Dynamic {
     return tidyFunction;
   }
 
-  private static String tidyUp(String function) {
+  public static String tidyUpBrackets(String function) {
 
     String dirtyTerm = function.replaceAll("\\[", "(")
                            .replaceAll("]", ")");
@@ -333,6 +340,7 @@ public class Newton_Dynamic {
       int builderIndex = (mainBuilder.length() - 1);
       if (character == '(') {
         if (index == 0) {
+          index++;
           continue;
         }
         else {
@@ -343,17 +351,18 @@ public class Newton_Dynamic {
           // -(3+1-5) --> -3-1+5
           else if (dirtyTerm.charAt(index-1) == '-') {
             String reversedSigns = reverseSigns(dirtyTerm.substring(index+1));
+            System.out.println(reversedSigns);
             int reversedSize = reversedSigns.length();
-            mainBuilder.deleteCharAt(builderIndex)
+            mainBuilder.delete(builderIndex - 1, builderIndex + 1)
                 .append(reversedSigns);
             index += (reversedSize+1);
           }
-          // +(3-1) --> +3-1
+          // +(x-1) --> +x-1
           else if (dirtyTerm.charAt(index - 1) == '+'
             && dirtyTerm.charAt(index + 1) != '-') {
             String subTerm = getBracketItems(dirtyTerm.substring(index+1));
             int bracketSize = subTerm.length();
-            mainBuilder.deleteCharAt(builderIndex).append(subTerm);
+            mainBuilder.deleteCharAt(builderIndex).append(subTerm.replaceFirst(" ", ""));
             index += (bracketSize+1);
           }
           // +(-3-2+1) --> -3-2+1
@@ -367,7 +376,7 @@ public class Newton_Dynamic {
           }
         }
       }
-      if (index == (dirtyTerm.length()-1)) {
+      if (index >= (dirtyTerm.length()-1)) {
         break;
       }
       index++;
@@ -375,25 +384,55 @@ public class Newton_Dynamic {
     return mainBuilder.toString();
   }
 
-  private static String getBracketItems(String bracket) {
+  // TODO: implement new approach
+  private static String processBrackets() {
+    return null;
+  }
 
+  private static String getBracketItems(String term) {
+
+    int termLength = (term.length() - 1);
     int index = 0;
-    StringBuilder bracketItem = new StringBuilder();
-    while (bracket.charAt(index) != ')') {
-      char character = bracket.charAt(index);
-      bracketItem.append(character);
+    StringBuilder builder = new StringBuilder();
+    while (true) {
+      char character = term.charAt(index);
+      builder.append(character);
+      if (character == ')' && index < termLength) {
+        if (term.charAt(index+1) == '(') {
+          builder.append("*");
+          builder.insert(0, "(");
+          index++;
+          continue;
+        }
+        String subSequence = term.subSequence(index+1, index+3).toString();
+        if (subSequence.equals("*(")) {
+          builder.append(subSequence);
+          builder.insert(0, "(");
+          index += 2;
+          continue;
+        }
+        else {
+          break;
+        }
+      }
+      if (index == (term.length()-1)) {
+        break;
+      }
       index++;
     }
-    if (bracketItem.toString().startsWith("+")) {
-      bracketItem.replace(0,1, " ");
+    if (builder.toString().startsWith("+")) {
+      builder.replace(0,1, " ");
     }
-    return bracketItem.toString();
+    System.out.println(builder);
+    return builder.toString();
   }
 
   private static String reverseSigns(String subString) {
 
+    System.out.println("reverse");
     int index = 0;
     StringBuilder builder = new StringBuilder();
+
     while (subString.charAt(index) != ')') {
       char character = subString.charAt(index);
 
@@ -407,6 +446,15 @@ public class Newton_Dynamic {
         builder.append('-');
       }
       index++;
+    }
+    index++;
+
+    if (index < (subString.length()-1)) {
+      String subSequence = subString.subSequence(index+1, index+3).toString();
+      if (subString.charAt(index) == '(' || subSequence.equals("*(")) {
+        builder = new StringBuilder(getBracketItems(subString));
+        builder.insert(0, "-");
+      }
     }
     return builder.toString();
   }

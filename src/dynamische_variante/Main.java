@@ -14,7 +14,9 @@ public class Main {
     //System.out.println(Newton_Dynamic.getDerivation("x^2+x^2,5+2*x+3-x"));
     //System.out.println(Newton_Dynamic.getDerivation("x^2+x+x^1,5+x^1"));
     //System.out.println(Newton_Dynamic.getDerivation("x^2+(-1x)"));
-    System.out.println(Newton_Dynamic.tidyUp("x^2+(-1x*(-1))"));
+    System.out.println(Newton_Dynamic.prepareInput("x^2(-1x)"));
+    System.out.println(Newton_Dynamic.prepareInput("x^2+(-1x)"));
+    System.out.println(Newton_Dynamic.prepareInput("x^2-(1x)"));
 
     System.out.println("---------------------------------------------------");
     System.out.println(Newton_Dynamic.calc("cos(x)*cos(x)", "1"));

@@ -284,42 +284,42 @@ public class Newton_Dynamic {
     return intervall;
   }
 
-  private static String prepareInput(String function) {
+  public static String prepareInput(String function) {
     String prepared = function.toLowerCase()
                               .replaceAll("e","2.718282")
                               .replaceAll("π", "3.14159")
                               .replaceAll("pi", "3.14159");
 
     String tidyFunction = tidyUp(prepared);
-    System.out.println("Tidy: " + tidyFunction); //TODO: delete sout
 
+    // skipping leading + or - x by adapting the index
     int index = 0;
-    if(prepared.startsWith("-")) {
+    if(tidyFunction.startsWith("-") || tidyFunction.startsWith("+")) {
       index++;
-      if(prepared.charAt(1) == 'x') {
+      if(tidyFunction.charAt(1) == 'x') {
         index++;
       }
     } else {
-      if(prepared.startsWith("x")) {
+      if(tidyFunction.startsWith("x")) {
         index++;
       }
     }
-    for (int i = index; i < prepared.length(); i++) {
-      if (prepared.charAt(i) == 'x') {
-        if(isNumber(prepared.charAt(i-1))) {
+    for (int i = index; i < tidyFunction.length(); i++) {
+      if (tidyFunction.charAt(i) == 'x') {
+        if(Character.isDigit(tidyFunction.charAt(i-1))) {
           StringBuilder builder = new StringBuilder();
-          builder.append(prepared, 0, i);
+          builder.append(tidyFunction, 0, i);
           builder.append("*");
-          builder.append(prepared, i, (prepared.length()));
-          prepared = builder.toString();
+          builder.append(tidyFunction, i, (tidyFunction.length()));
+          tidyFunction = builder.toString();
           i++;
         }
       }
     }
-    return prepared;
+    return tidyFunction;
   }
 
-  public static String tidyUp(String function) {
+  private static String tidyUp(String function) {
 
     String dirtyTerm = function.replaceAll("\\[", "(")
                            .replaceAll("]", ")");
@@ -349,7 +349,6 @@ public class Newton_Dynamic {
             index += (reversedSize+1);
           }
           // +(3-1) --> +3-1
-          // +(-3-2+1) --> -3-2+1
           else if (dirtyTerm.charAt(index - 1) == '+'
             && dirtyTerm.charAt(index + 1) != '-') {
             String subTerm = getBracketItems(dirtyTerm.substring(index+1));
@@ -357,6 +356,7 @@ public class Newton_Dynamic {
             mainBuilder.deleteCharAt(builderIndex).append(subTerm);
             index += (bracketSize+1);
           }
+          // +(-3-2+1) --> -3-2+1
           else if (dirtyTerm.charAt(index - 1) == '+'
               && dirtyTerm.charAt(index + 1) == '-') {
             String subTerm = getBracketItems(dirtyTerm.substring(index+1));
@@ -406,12 +406,9 @@ public class Newton_Dynamic {
       else {
         builder.append('-');
       }
+      index++;
     }
     return builder.toString();
-  }
-
-  private static boolean isNumber(char c) {
-    return Character.isDigit(c);
   }
 
   private static boolean isNotInteger(String str) {

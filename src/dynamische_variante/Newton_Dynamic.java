@@ -1,8 +1,11 @@
 package dynamische_variante;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Newton_Dynamic {
 
@@ -14,7 +17,7 @@ public class Newton_Dynamic {
 
     System.out.println("Funktion eingeben: ");
     System.out.print("f(x)= ");
-    String unpreparedFunc = scanner.nextLine().strip();
+    String unpreparedFunc = scanner.nextLine();
     function = prepareInput(unpreparedFunc);
 
     List<Double> zeroPointAreas;
@@ -169,7 +172,8 @@ public class Newton_Dynamic {
     } else {
       exponentBuilder = new StringBuilder();
       int index = 0;
-      while (Character.isDigit(subString.charAt(index)) || subString.charAt(index) == ',') {
+      while (Character.isDigit(subString.charAt(index))
+          || subString.charAt(index) == ',') {
         exponentBuilder.append(subString.charAt(index));
         index++;
         if (index == subString.length()-1) {
@@ -180,7 +184,12 @@ public class Newton_Dynamic {
     return exponentBuilder.toString();
   }
 
-  // Bug free
+  /**
+   * BUG-FREE
+   *
+   * @param function
+   * @return
+   */
   private static String eliminateConstants(String function) {
 
     StringBuilder derivation = new StringBuilder();
@@ -266,7 +275,7 @@ public class Newton_Dynamic {
 
     System.out.print("Start: ");
     String start = scanner.nextLine().strip().replace(" ", "");
-    while (isNotInteger(start)) {
+    while (invalidIntervall(start)) {
       System.out.println("Fehlerhafte Eingabe! Geben Sie einen ganzzahligen Wert ein.");
       System.out.print("Start: ");
       start = scanner.nextLine().strip().replace(" ", "");
@@ -274,7 +283,7 @@ public class Newton_Dynamic {
 
     System.out.print("Ende: ");
     String end = scanner.nextLine().strip().replace(" ", "");
-    while (isNotInteger(end)) {
+    while (invalidIntervall(end)) {
       System.out.println("Fehlerhafte Eingabe! Geben Sie einen ganzzahligen Wert ein.");
       System.out.print("Ende: ");
       end = scanner.nextLine().strip().replace(" ", "");
@@ -285,20 +294,21 @@ public class Newton_Dynamic {
   }
 
   /**
+   * BUG-FREE
+   * .
    * Input preparation for {@link Newton_Dynamic#calc(String, String)}
    *
    * @param function the unprepared function
    * @return prepared function
    */
   public static String prepareInput(String function) {
-    String prepared = function.toLowerCase()
-                              .replaceAll("e","2.718282")
-                              .replaceAll("π", "3.14159")
-                              .replaceAll("pi", "3.14159");
+    String normalisedWhiteSpace = normaliseWhiteSpaces(function);
 
-    String tidyFunction = tidyUpBrackets(prepared);
+    String prepared = convertConstants(normalisedWhiteSpace);
 
-    // skipping leading + or - x by adapting the index
+    String tidyFunction = processBrackets(prepared);
+
+    // skipping leading + or - x by increasing the index
     int index = 0;
     if(tidyFunction.startsWith("-") || tidyFunction.startsWith("+")) {
       index++;
@@ -310,20 +320,99 @@ public class Newton_Dynamic {
         index++;
       }
     }
-    for (int i = index; i < tidyFunction.length(); i++) {
-      if (tidyFunction.charAt(i) == 'x') {
-        if(Character.isDigit(tidyFunction.charAt(i-1))
-            || tidyFunction.charAt(i-1) == ')') {
-          StringBuilder builder = new StringBuilder();
-          builder.append(tidyFunction, 0, i);
-          builder.append("*");
-          builder.append(tidyFunction, i, (tidyFunction.length()));
-          tidyFunction = builder.toString();
-          i++;
+
+    // final processing of items within brackets
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < tidyFunction.length(); i++) {
+      char c = tidyFunction.charAt(i);
+      builder.append(c);
+      if (i >= index) {
+        if (tidyFunction.charAt(i) == 'x') {
+          if(Character.isDigit(tidyFunction.charAt(i-1))) {
+            int builderIndex = (builder.length()-1);
+            builder.insert(builderIndex, "*");
+          }
         }
       }
     }
-    return tidyFunction;
+    return builder.toString();
+  }
+
+  /**
+   * BUG-FREE
+   *
+   * @param function
+   * @return
+   */
+  private static String convertConstants(String function) {
+
+    Map<String, String> constants = new HashMap<>();
+    constants.put("e", "2,718282");
+    constants.put("p", "3,14159");
+    Set<String> symbols = constants.keySet();
+
+    String term = function.toLowerCase()
+                          .replaceAll("(pi)", "p")
+                          .replaceAll("π", "p");
+    int length = term.length()-1;
+    StringBuilder builder = new StringBuilder();
+
+    for (int i = 0; i <= length; i++) {
+      char character = term.charAt(i);
+      builder.append(character);
+      if (symbols.contains(String.valueOf(character))) {
+        if (i > 0) {
+          if (Character.isDigit(term.charAt(i-1)) || term.charAt(i-1) == ')') {
+            int builderIndex = (builder.length()-1);
+            builder.insert(builderIndex-1, "*");
+          }
+        }
+        if (i < length) {
+          if (Character.isDigit(term.charAt(i+1))
+              || term.charAt(i+1) == '('
+              || term.charAt(i+1) == 'x') {
+            builder.append("*");
+          }
+        }
+      }
+    }
+    return builder.toString()
+                  .replaceAll("e","2,718282")
+                  .replaceAll("p", "3,14159");
+  }
+
+  /**
+   *
+   * BUG-FREE.
+   *
+   * @param function
+   * @return
+   */
+  public static String normaliseWhiteSpaces(String function) {
+
+    int index = 0;
+    String stripedFunction = function.strip();
+    int length = (stripedFunction.length() - 1);
+    StringBuilder builder = new StringBuilder();
+
+    while (true) {
+      char character = stripedFunction.charAt(index);
+      if (character == ' ') {
+        index++;
+        continue;
+      }
+      builder.append(character);
+      if (character == '^') {
+        String exponent = getExponent(stripedFunction.substring(index + 1));
+        builder.append(exponent).append(" ");
+        index += exponent.length();
+      }
+      if (index >= length) {
+        break;
+      }
+      index++;
+    }
+    return builder.toString();
   }
 
   public static String tidyUpBrackets(String function) {
@@ -384,9 +473,52 @@ public class Newton_Dynamic {
     return mainBuilder.toString();
   }
 
-  // TODO: implement new approach
-  private static String processBrackets() {
-    return null;
+  /**
+   *
+   * BUG-FREE
+   * TODO: implement new approach
+   *
+   * @param function
+   * @return
+   */
+  public static String processBrackets(String function) {
+
+    String term = function.replaceAll("\\[", "(")
+            .replaceAll("]", ")");
+
+    StringBuilder preparedSub = new StringBuilder();
+    for (int i = 0; i < term.length(); i++) {
+      char character = term.charAt(i);
+      preparedSub.append(character);
+      if (character == '(') {
+        if (term.charAt(i-1) != '+'
+            && term.charAt(i-1) != '-'
+            && term.charAt(i-1) != '/') {
+          preparedSub.insert(preparedSub.length()-1, "*");
+        }
+      }
+      if (character == ')') {
+        if (i < (term.length() - 1)) {
+          if (term.charAt(i+1) == 'x'
+              || Character.isDigit(term.charAt(i+1))) {
+            preparedSub.append("*");
+          }
+        }
+      }
+    }
+
+    // TODO: extend method by + and - processing
+    /*char charAt0 = term.charAt(0);
+    char firstChar = charAt0 == '*' || charAt0 == '/'
+                     ? '#'
+                     : charAt0;
+    StringBuilder builder = new StringBuilder();
+    if ()
+
+    switch (firstChar) {
+      case '#' ->
+    }*/
+    return preparedSub.toString();
   }
 
   private static String getBracketItems(String term) {
@@ -459,7 +591,7 @@ public class Newton_Dynamic {
     return builder.toString();
   }
 
-  private static boolean isNotInteger(String str) {
+  private static boolean invalidIntervall(String str) {
 
     boolean isNotInt = false;
 
@@ -487,6 +619,18 @@ public class Newton_Dynamic {
       isNotInt = true;
     }
     return isNotInt;
+  }
+
+  public static double sum_Operator(int k, int n, String function) {
+
+    String f = prepareInput(function);
+
+    double sum = 0;
+
+    for (int i = k; i <= n; i++) {
+      sum += calc(f, String.valueOf(i));
+    }
+    return sum;
   }
 
   public static double calc(String function, String argument) {

@@ -114,4 +114,15 @@ class UnitTest {
     String actual = Newton_Dynamic.eliminateConstants(value);
     //Assert
   }
+
+  @Test
+  void bracketTest() {
+    //Arrange
+    String value = "2x-10(3x+5)(2x-2)-5";
+    String expected = "2x";
+    //Act
+    String actual = Newton_Dynamic.processBrackets(input(value));
+    //Assert
+    assertEquals(expected, actual);
+  }
 }

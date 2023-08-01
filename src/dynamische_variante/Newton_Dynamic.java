@@ -323,6 +323,7 @@ public class Newton_Dynamic {
    * @return prepared function
    */
   public static String prepareInput(String function) {
+
     String normalisedWhiteSpace = normaliseWhiteSpaces(function);
 
     String prepared = convertConstants(normalisedWhiteSpace);
@@ -436,6 +437,7 @@ public class Newton_Dynamic {
     return builder.toString();
   }
 
+  @Deprecated
   public static String tidyUpBrackets(String function) {
 
     String dirtyTerm = function.replaceAll("\\[", "(")
@@ -497,8 +499,6 @@ public class Newton_Dynamic {
   /**
    *
    * BUG-FREE
-   * TODO: implement new approach
-   *
    * @param function
    * @return
    */

@@ -72,7 +72,7 @@ public class Newton_Dynamic {
     return derivation;
   }
 
-  private static String differentiate_X(String function) {
+  public static String differentiate_X(String function) {
 
     StringBuilder exponentDerived = new StringBuilder();
     int length = (function.length() - 1);
@@ -104,7 +104,7 @@ public class Newton_Dynamic {
     return exponentDerived.toString();
   }
 
-  private static String deriveDegree_1(String function) {
+  public static String deriveDegree_1(String function) {
 
     StringBuilder builder = new StringBuilder();
     int length = (function.length() -1);
@@ -137,6 +137,8 @@ public class Newton_Dynamic {
     return builder.toString();
   }
 
+  @Deprecated
+  //TODO: Delete
   public static boolean isDegree_1(String function, int start) {
     boolean isDegree_1;
     int index = start;
@@ -154,18 +156,31 @@ public class Newton_Dynamic {
     return isDegree_1;
   }
 
-  private static boolean isInteger(String number) {
-    String decimal = number.substring(number.indexOf(".") + 1);
-    for (char c : decimal.toCharArray()) {
-      if (c != '0') {
-        return false;
+  /**
+   *
+   * BUG-FREE
+   * @param number
+   * @return
+   */
+  public static boolean isInteger(String number) {
+    if (number.contains(".")) {
+      String decimal = number.substring(number.indexOf(".") + 1);
+      for (char c : decimal.toCharArray()) {
+        if (c != '0') {
+          return false;
+        }
       }
     }
     return true;
   }
 
-  // Bug free
-  private static String getExponent(String subString) {
+  /**
+   *
+   * Bug free
+   * @param subString
+   * @return
+   */
+  public static String getExponent(String subString) {
     StringBuilder exponentBuilder;
     if (subString.length() == 1) {
       return subString;
@@ -190,7 +205,7 @@ public class Newton_Dynamic {
    * @param function
    * @return
    */
-  private static String eliminateConstants(String function) {
+  public static String eliminateConstants(String function) {
 
     StringBuilder derivation = new StringBuilder();
 
@@ -214,7 +229,7 @@ public class Newton_Dynamic {
     return derivation.toString();
   }
 
-  private static double newtonMethod(double Xo) {
+  public static double newtonMethod(double Xo) {
     double xn = Xo;
     double xn_min_1;
 
@@ -229,17 +244,23 @@ public class Newton_Dynamic {
     return round(xn);
   }
 
-  private static double round(double value) {
+  /**
+   *
+   * BUG-FREE.
+   * @param value
+   * @return
+   */
+  public static double round(double value) {
 
     double factor = Math.pow(10, 4);
     return (Math.round(value * factor) / factor);
   }
 
-  private static double deltaX(double x0, double x1) {
+  public static double deltaX(double x0, double x1) {
     return Math.abs(x0-x1);
   }
 
-  private static boolean isAlmostZero(double value) {
+  public static boolean isAlmostZero(double value) {
 
     if (value <= 0.001 && value >= -0.001) {
       return true;
@@ -248,7 +269,7 @@ public class Newton_Dynamic {
     }
   }
 
-  private static List<Double> getZeroPointCandidates(int start, int end) {
+  public static List<Double> getZeroPointCandidates(int start, int end) {
 
     List<Double> zeroPointAreas = new ArrayList<>();
     String beginn = String.valueOf(start);
@@ -268,7 +289,7 @@ public class Newton_Dynamic {
     return zeroPointAreas;
   }
 
-  private static int[] getIntervall() {
+  public static int[] getIntervall() {
 
     int[] intervall = new int[2];
     System.out.println("Gebe das Intervall an fur die Nullstellensuche von f(x) = " + function);
@@ -344,7 +365,7 @@ public class Newton_Dynamic {
    * @param function
    * @return
    */
-  private static String convertConstants(String function) {
+  public static String convertConstants(String function) {
 
     Map<String, String> constants = new HashMap<>();
     constants.put("e", "2,718282");
@@ -521,7 +542,7 @@ public class Newton_Dynamic {
     return preparedSub.toString();
   }
 
-  private static String getBracketItems(String term) {
+  public static String getBracketItems(String term) {
 
     int termLength = (term.length() - 1);
     int index = 0;
@@ -559,7 +580,7 @@ public class Newton_Dynamic {
     return builder.toString();
   }
 
-  private static String reverseSigns(String subString) {
+  public static String reverseSigns(String subString) {
 
     System.out.println("reverse");
     int index = 0;
@@ -591,7 +612,7 @@ public class Newton_Dynamic {
     return builder.toString();
   }
 
-  private static boolean invalidIntervall(String str) {
+  public static boolean invalidIntervall(String str) {
 
     boolean isNotInt = false;
 

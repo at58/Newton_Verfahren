@@ -2,6 +2,8 @@ package test;
 
 import static org.junit.jupiter.api.Assertions.*;
 import dynamische_variante.Newton_Dynamic;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class UnitTest {
@@ -124,5 +126,22 @@ class UnitTest {
     String actual = Newton_Dynamic.processBrackets(input(value));
     //Assert
     assertEquals(expected, actual);
+  }
+
+  @Test
+  void zeroPointCandidatesTest() {
+    //Arrange
+    String function = "x^2 -2";
+    int start = -5;
+    int end = 5;
+    double[] expected = new double[] {-1.5, 1.5};
+    //Act
+    List<Double> actual = Newton_Dynamic.getZeroPointCandidates(function, start, end);
+    double[] actualArray = new double[actual.size()];
+    for(Double d : actual) {
+      actualArray[actual.indexOf(d)] = d;
+    }
+    //Assert
+    assertArrayEquals(expected, actualArray);
   }
 }

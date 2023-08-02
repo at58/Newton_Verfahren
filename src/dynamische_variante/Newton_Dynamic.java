@@ -10,51 +10,109 @@ import java.util.Set;
 public class Newton_Dynamic {
 
   static final Scanner scanner = new Scanner(System.in);
-  static final double epsilon = 0.01;
+  static final double epsilon = 0.001;
   static String function;
 
   public static List<Double> process() {
 
+    // Get Function by console input
     System.out.println("Funktion eingeben: ");
     System.out.print("f(x)= ");
-    String unpreparedFunc = scanner.nextLine();
-    function = prepareInput(unpreparedFunc);
+    String uncheckedFunction = scanner.nextLine();
+    String validFunction = prepareInput(uncheckedFunction);
 
     List<Double> zeroPointAreas;
     List<Double> zeroPoints = new ArrayList<>();
 
+    // Get boundary of x-axis for zero point search
     boolean repeat = true;
     while(repeat) {
-      int[] intervall = getIntervall();
+      int[] intervall = getIntervall(uncheckedFunction);
       int start = intervall[0];
       int end = intervall[1];
 
-      zeroPointAreas = getZeroPointCandidates(start, end);
-
+      zeroPointAreas = getZeroPointCandidates(validFunction, start, end);
+      if (!(zeroPointAreas instanceof ArrayList<Double>)) {
+        zeroPoints = zeroPointAreas;
+        break;
+      }
       if (zeroPointAreas.isEmpty()) {
         System.out.println("Es gibt keine Nullstellen im vorgegebenen Intervall!");
-        System.out.println("Soll ein neues Intervall fur f(x) = " + function
+        System.out.println("Soll ein neues Intervall fur f(x) = " + validFunction
                                + " untersucht werden?\nj = ja\nn = nein");
         String yesOrNo = scanner.nextLine();
-        if (!yesOrNo.equals("j")) {
-          repeat = false;
-        }
+        if (yesOrNo.equals("j")) {
+          continue;
+        } else break;
       }
       else {
-        System.out.println("Folgende Xo-Werte werden fur die Nullstellensuche verwendet: ");
+        System.out.println("\nFolgende Xo-Werte werden fur die Nullstellensuche verwendet: ");
         for (double point : zeroPointAreas) {
-          System.out.print(point + " ");
+          String pointStr = String.valueOf(point).replace(".", ",");
+          String p = pointStr.startsWith("-")
+                     ? pointStr
+                     : ("+"+pointStr);
+          System.out.println(p);
         }
         System.out.println();
+
         for (double x : zeroPointAreas) {
-          zeroPoints.add(newtonMethod(x));
+          // Applying Newton Method
+          zeroPoints.add(newtonMethod(validFunction, x));
         }
-        repeat = false;
       }
+      repeat = false;
     }
+    printZeroPoints(zeroPoints);
     return zeroPoints;
   }
 
+  /**
+   *
+   * BUGGY !
+   * @param function
+   * @return
+   */
+  @Deprecated
+  public static boolean isConstantsFree(String function) {
+
+    String modified = function.replaceAll("[0-9]+\\*x", "x");
+    modified = modified.replaceAll("(\\^[0-9]+,?[0-9]+)|(\\^[0-9]+)", "");
+
+    if (modified.matches("[0-9]") || modified.contains("^")) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   *
+   * BUG-FREE
+   * @param zeroPoints
+   */
+  private static void printZeroPoints(List<Double> zeroPoints) {
+
+    if(!zeroPoints.isEmpty()) {
+      System.out.println("Die ermittelten Nullstellen sind:");
+      for (double d : zeroPoints) {
+        String pointStr = String.valueOf(d).replace(".", ",");
+        String printable = pointStr.startsWith("-")
+                           ? pointStr
+                           : ("+"+pointStr);
+        System.out.println(printable);
+      }
+    }
+    else {
+      System.out.println("Keine Nullstellen gefunden!");
+    }
+  }
+
+  /**
+   *
+   * BUG-FREE
+   * @param function
+   * @return
+   */
   public static String getDerivation(String function) {
 
     String derivation;
@@ -137,25 +195,6 @@ public class Newton_Dynamic {
     return builder.toString();
   }
 
-  @Deprecated
-  //TODO: Delete
-  public static boolean isDegree_1(String function, int start) {
-    boolean isDegree_1;
-    int index = start;
-    if (function.charAt(index) == '1') {
-      isDegree_1 = true;
-      index++;
-      if(index != function.length()-1) {
-        if (Character.isDigit(function.charAt(index))) {
-          isDegree_1 = false;
-        }
-      }
-    } else {
-      isDegree_1 = false;
-    }
-    return isDegree_1;
-  }
-
   /**
    *
    * BUG-FREE
@@ -229,13 +268,14 @@ public class Newton_Dynamic {
     return derivation.toString();
   }
 
-  public static double newtonMethod(double Xo) {
+  public static double newtonMethod(String function, double Xo) {
     double xn = Xo;
     double xn_min_1;
+    String derivation = getDerivation(function);
 
     while (true) {
       xn_min_1 = xn;
-      xn = xn_min_1 - (calc(function, String.valueOf(xn_min_1)) / calc(function, String.valueOf(xn_min_1)));
+      xn = xn_min_1 - (calc(function, String.valueOf(xn_min_1)) / calc(derivation, String.valueOf(xn_min_1)));
       if (deltaX(xn, xn_min_1) < epsilon
           || isAlmostZero(calc(function, String.valueOf(xn)))) {
         break;
@@ -260,36 +300,70 @@ public class Newton_Dynamic {
     return Math.abs(x0-x1);
   }
 
-  public static boolean isAlmostZero(double value) {
+  public static boolean isAlmostZero(Double value) {
 
-    if (value <= 0.001 && value >= -0.001) {
+    if (value == null) {
+      return true;
+    }
+    if (value <= 0.0001 && value >= -0.0001) {
       return true;
     } else {
       return false;
     }
   }
 
-  public static List<Double> getZeroPointCandidates(int start, int end) {
+  /**
+   *
+   * BUG-FREE
+   * @param function
+   * @param start
+   * @param end
+   * @return
+   */
+  public static List<Double> getZeroPointCandidates(String function, int start, int end) {
 
     List<Double> zeroPointAreas = new ArrayList<>();
-    String beginn = String.valueOf(start);
-    String ende = String.valueOf(end);
+    class FinalList extends ArrayList<Double> {
+      public FinalList() {
+      }
+    }
+    List<Double> exactZeroPoints = new FinalList();
+    String startAsStr = String.valueOf(start);
     /*
     Math.signum() zeigt an, ob der als Argument übergebene Wert eine positive oder negative Zahl
     oder 0 ist.
     */
-    double sign_1 = Math.signum(calc(function, beginn));
-    for (int i = (start + 1); i <= end; i++) {
-      double sign_2 = Math.signum(calc(function, String.valueOf(i)));
-      if (sign_2 != sign_1) {
-        zeroPointAreas.add(i - 0.5);
-        sign_1 = sign_2;
+    if (end <= (start + 1) && end >= (start-1)) {
+      zeroPointAreas.add((double) start);
+    }
+    else  {
+      double sign_1 = Math.signum(calc(function, startAsStr));
+
+      for (double i = (start + 0.5); i <= end; i+=0.5) {
+        double functionValue = calc(function, String.valueOf(i));
+        if (functionValue == 0.0) {
+          exactZeroPoints.add(i);
+        }
+        else {
+          double sign_2 = Math.signum(calc(function, String.valueOf(i)));
+          if (sign_2 != sign_1) {
+            zeroPointAreas.add(i - 0.5);
+            sign_1 = sign_2;
+          }
+        }
       }
+    }
+    if (!exactZeroPoints.isEmpty()) {
+      return exactZeroPoints;
     }
     return zeroPointAreas;
   }
 
-  public static int[] getIntervall() {
+  private static List<Double> isDoubleZeroPoint(double negativeX, double positiveX) {
+    return null;
+  }
+
+  public static int[] getIntervall(String function) {
 
     int[] intervall = new int[2];
     System.out.println("Gebe das Intervall an fur die Nullstellensuche von f(x) = " + function);
@@ -357,7 +431,7 @@ public class Newton_Dynamic {
         }
       }
     }
-    return builder.toString();
+    return builder.toString().replaceAll(",", ".");
   }
 
   /**
@@ -435,65 +509,6 @@ public class Newton_Dynamic {
       index++;
     }
     return builder.toString();
-  }
-
-  @Deprecated
-  public static String tidyUpBrackets(String function) {
-
-    String dirtyTerm = function.replaceAll("\\[", "(")
-                           .replaceAll("]", ")");
-
-    StringBuilder mainBuilder = new StringBuilder();
-    int index = 0;
-
-    while (true) {
-      char character = dirtyTerm.charAt(index);
-      mainBuilder.append(character);
-      int builderIndex = (mainBuilder.length() - 1);
-      if (character == '(') {
-        if (index == 0) {
-          index++;
-          continue;
-        }
-        else {
-          // 2(3+2) --> 2*(3+2)
-          if (Character.isDigit(dirtyTerm.charAt(index-1))) {
-            mainBuilder.replace(builderIndex, builderIndex + 1, "*(");
-          }
-          // -(3+1-5) --> -3-1+5
-          else if (dirtyTerm.charAt(index-1) == '-') {
-            String reversedSigns = reverseSigns(dirtyTerm.substring(index+1));
-            System.out.println(reversedSigns);
-            int reversedSize = reversedSigns.length();
-            mainBuilder.delete(builderIndex - 1, builderIndex + 1)
-                .append(reversedSigns);
-            index += (reversedSize+1);
-          }
-          // +(x-1) --> +x-1
-          else if (dirtyTerm.charAt(index - 1) == '+'
-            && dirtyTerm.charAt(index + 1) != '-') {
-            String subTerm = getBracketItems(dirtyTerm.substring(index+1));
-            int bracketSize = subTerm.length();
-            mainBuilder.deleteCharAt(builderIndex).append(subTerm.replaceFirst(" ", ""));
-            index += (bracketSize+1);
-          }
-          // +(-3-2+1) --> -3-2+1
-          else if (dirtyTerm.charAt(index - 1) == '+'
-              && dirtyTerm.charAt(index + 1) == '-') {
-            String subTerm = getBracketItems(dirtyTerm.substring(index+1));
-            int bracketSize = subTerm.length();
-            mainBuilder.delete(builderIndex - 1, builderIndex + 1);
-            mainBuilder.append(subTerm);
-            index += (bracketSize+1);
-          }
-        }
-      }
-      if (index >= (dirtyTerm.length()-1)) {
-        break;
-      }
-      index++;
-    }
-    return mainBuilder.toString();
   }
 
   /**
@@ -654,16 +669,25 @@ public class Newton_Dynamic {
     return sum;
   }
 
-  public static double calc(String function, String argument) {
-
-    final String str = function.replaceAll("x", argument);
+  public static Double calc(String function, String argument) {
+    String finalStr;
+    if (argument.strip().startsWith("-")) {
+      finalStr = wrapNegativeXintoBrackets(function)
+          .replaceAll("x", argument);
+    } else {
+      finalStr = function.replaceAll("x", argument);
+    }
+    if (finalStr.contains("E")) {
+      return null;
+    }
+    System.out.println(finalStr);
 
     return new Object() {
       int pos = -1, ch;
 
       void nextChar() {
 
-        ch = (++pos < str.length()) ? str.charAt(pos) : -1;
+        ch = (++pos < finalStr.length()) ? finalStr.charAt(pos) : -1;
       }
 
       boolean eat(int charToEat) {
@@ -680,7 +704,7 @@ public class Newton_Dynamic {
 
         nextChar();
         double x = parseExpression();
-        if (pos < str.length()) throw new RuntimeException("Unexpected: " + (char) ch);
+        if (pos < finalStr.length()) throw new RuntimeException("Unexpected: " + (char) ch);
         return x;
       }
 
@@ -723,10 +747,10 @@ public class Newton_Dynamic {
           if (!eat(')')) throw new RuntimeException("Missing ')'");
         } else if ((ch >= '0' && ch <= '9') || ch == '.') { // numbers
           while ((ch >= '0' && ch <= '9') || ch == '.') nextChar();
-          x = Double.parseDouble(str.substring(startPos, this.pos));
+          x = Double.parseDouble(finalStr.substring(startPos, this.pos));
         } else if (ch >= 'a' && ch <= 'z') { // functions
           while (ch >= 'a' && ch <= 'z') nextChar();
-          String func = str.substring(startPos, this.pos);
+          String func = finalStr.substring(startPos, this.pos);
           if (eat('(')) {
             x = parseExpression();
             if (!eat(')')) throw new RuntimeException("Missing ')' after argument to " + func);
@@ -747,5 +771,29 @@ public class Newton_Dynamic {
         return x;
       }
     }.parse();
+  }
+
+  /**
+   *
+   * BUG-FREE
+   * @param function
+   * @return
+   */
+  public static String wrapNegativeXintoBrackets(String function) {
+    StringBuilder builder = new StringBuilder();
+    int index = 0;
+    while(true) {
+      char character = function.charAt(index);
+      builder.append(character);
+      if (character == 'x') {
+        builder.insert(builder.length()-1, "(");
+        builder.append(")");
+      }
+      if (index == function.length()-1) {
+        break;
+      }
+      index++;
+    }
+    return builder.toString();
   }
 }

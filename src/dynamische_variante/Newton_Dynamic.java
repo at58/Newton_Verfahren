@@ -7,6 +7,9 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+/**
+ * TODO: Implementierung von Produktregel, Kettenregel und Quotientenregel
+ */
 public class Newton_Dynamic {
 
   static final Scanner scanner = new Scanner(System.in);

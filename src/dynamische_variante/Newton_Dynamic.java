@@ -241,13 +241,15 @@ public class Newton_Dynamic {
   /**
    * BUG-FREE
    *
-   * @param function
+   * @param func
    * @return
    */
-  public static String eliminateConstants(String function) {
+  public static String eliminateConstants(String func) {
 
     StringBuilder derivation = new StringBuilder();
-
+    String function = func.startsWith("+")
+                      ? func.substring(1)
+                      : func;
     int leftBorder = 0;
 
     for (int i = function.startsWith("-") ? 1 : 0; i < function.length(); i++) {
@@ -265,6 +267,11 @@ public class Newton_Dynamic {
     if (lastPart.contains("x")) {
       derivation.append(lastPart);
     }
+    if (lastPart.contains(")")) {
+      derivation.append(lastPart);
+    }
+
+
     return derivation.toString();
   }
 
@@ -529,7 +536,8 @@ public class Newton_Dynamic {
       if (character == '(') {
         if (term.charAt(i-1) != '+'
             && term.charAt(i-1) != '-'
-            && term.charAt(i-1) != '/') {
+            && term.charAt(i-1) != '/'
+            && term.charAt(i-1) != '*') {
           preparedSub.insert(preparedSub.length()-1, "*");
         }
       }
@@ -680,7 +688,7 @@ public class Newton_Dynamic {
     if (finalStr.contains("E")) {
       return null;
     }
-    System.out.println(finalStr);
+    //System.out.println(finalStr);
 
     return new Object() {
       int pos = -1, ch;

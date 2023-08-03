@@ -2,7 +2,6 @@ package test;
 
 import static org.junit.jupiter.api.Assertions.*;
 import dynamische_variante.Newton_Dynamic;
-import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -121,7 +120,7 @@ class UnitTest {
   void bracketTest() {
     //Arrange
     String value = "2x-10(3x+5)(2x-2)-5";
-    String expected = "2x";
+    String expected = "2*x-10*(3*x+5)*(2*x-2)-5";
     //Act
     String actual = Newton_Dynamic.processBrackets(input(value));
     //Assert

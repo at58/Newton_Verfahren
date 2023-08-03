@@ -1,4 +1,4 @@
-package lf08_abgabe.functions;
+package lf08_abgabe.functions_hardcode;
 
 public abstract class BaseFunction implements IFunction{
 

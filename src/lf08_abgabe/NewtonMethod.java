@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
-import lf08_abgabe.functions.BaseFunction;
+import lf08_abgabe.functions_hardcode.BaseFunction;
 
 /**
  * Diese Klasse implementiert das Newton-Verfahren zur Suche von Nullstellen in einem vorgegebenen

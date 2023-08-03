@@ -2,10 +2,10 @@ package lf08_abgabe;
 
 import java.util.ArrayList;
 import java.util.List;
-import lf08_abgabe.functions.BaseFunction;
-import lf08_abgabe.functions.Function_1;
-import lf08_abgabe.functions.Function_2;
-import lf08_abgabe.functions.Function_3;
+import lf08_abgabe.functions_hardcode.BaseFunction;
+import lf08_abgabe.functions_hardcode.Function_1;
+import lf08_abgabe.functions_hardcode.Function_2;
+import lf08_abgabe.functions_hardcode.Function_3;
 
 public class Main {
 

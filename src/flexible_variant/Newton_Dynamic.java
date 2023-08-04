@@ -1,4 +1,4 @@
-package dynamische_variante;
+package flexible_variant;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * TODO: Implementierung von Produktregel, Kettenregel und Quotientenregel
@@ -138,6 +140,8 @@ public class Newton_Dynamic {
     StringBuilder exponentDerived = new StringBuilder();
     int length = (function.length() - 1);
 
+    List<int[]> trigonometricPositions = detectTrigonometricFunctions(function);
+
     for (int i = 0; i <= length; i++) {
       exponentDerived.append(function.charAt(i));
       if (function.charAt(i) == 'x') {
@@ -163,6 +167,61 @@ public class Newton_Dynamic {
       }
     }
     return exponentDerived.toString();
+  }
+
+  /**
+   * Detects the indexes of trigonometric terms, e.g. sin(x). It detects the first index
+   * and the last index of the term. This method is not able to detect trigonometric terms that
+   * are embedded within another trigonometric term.
+   * @param function
+   * @return
+   */
+  public static List<int[]> detectTrigonometricFunctions(String function) {
+
+    List<int[]> indexes = new ArrayList<>();
+    Pattern[] trigonometricPattern = new Pattern[]
+        { Pattern.compile("sin\\([\\d\\s+\\-*/^x]*\\)"),
+          Pattern.compile("cos\\([\\d\\s+\\-*/^x]*\\)"),
+          Pattern.compile("tan\\([\\d\\s+\\-*/^x]*\\)")
+        };
+    // sin\([\d\s+\-*/^x]*\)
+
+    Matcher matcher;
+    for (int i = 0; i < trigonometricPattern.length; i++) {
+      Pattern pattern = trigonometricPattern[i];
+      matcher = pattern.matcher(function);
+
+      while (matcher.find()){
+        int begin = matcher.start();
+        int end = matcher.end();
+        indexes.add(new int[] {begin, end});
+      }
+    }
+    return indexes;
+  }
+
+  public static String diffTrigonometricFunc(String function) {
+    String derivation = "";
+    String innerFunc = function.substring(
+        function.indexOf("(")+1, function.indexOf(")"));
+    String innerDerivation = getDerivation(innerFunc);
+    switch (function.substring(0, 3)) {
+      case "sin" -> derivation = innerDerivation.equals("1")
+                                 ? "cos("+innerFunc+")"
+                                 : "("+innerDerivation+")*cos("+innerFunc+")";
+      case "cos" -> derivation = innerDerivation.equals("1")
+                                 ? "-sin("+innerFunc+")"
+                                 : "("+innerDerivation+")*(-sin("+innerFunc+")";
+      case "tan" -> derivation = innerDerivation.equals("1")
+                                 ? "1/cos^2("+innerFunc+")"
+                                 : innerDerivation+"/cos^2("+innerFunc+")";
+    }
+    return derivation;
+  }
+
+  public static String chainRule(String function){
+    // TODO: implement
+    return null;
   }
 
   public static String deriveDegree_1(String function) {
@@ -680,6 +739,15 @@ public class Newton_Dynamic {
     return sum;
   }
 
+  /**
+   *
+   * Calculates the function value for the given value for x.
+   * For trigonometric functions, the radian is calculated.
+   *
+   * @param function the function as String.
+   * @param argument the value for the x-variable.
+   * @return the function value.
+   */
   public static Double calc(String function, String argument) {
     String finalStr;
     if (argument.strip().startsWith("-")) {

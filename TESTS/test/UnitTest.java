@@ -1,7 +1,7 @@
 package test;
 
 import static org.junit.jupiter.api.Assertions.*;
-import dynamische_variante.Newton_Dynamic;
+import flexible_variant.Newton_Dynamic;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -142,5 +142,16 @@ class UnitTest {
     }
     //Assert
     assertArrayEquals(expected, actualArray);
+  }
+
+  @Test
+  void calcTrigonometricFunction() {
+    //Arrange
+    String function = "sin(x)";
+    // Act
+    double actual = Newton_Dynamic.calc(function, "1");
+    // Assert
+    // Bogenmaß!
+    assertEquals(0.01745240643728351 , actual);
   }
 }
